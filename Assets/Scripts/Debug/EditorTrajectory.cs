@@ -7,6 +7,8 @@ using UnityEngine.Experimental.AI;
 [ExecuteInEditMode]
 public class EditorTrajectory : MonoBehaviour
 {
+    public int trajectorySteps;
+    public int trajectoryStepInterval;
     public CelestialBody relativeBody;
     public bool orbitRelativeToBody;
     public bool drawTrajectories;
@@ -40,8 +42,6 @@ public class EditorTrajectory : MonoBehaviour
         }
         if (relativeBody == null) relativeBodyEditor = null;
 
-        int trajectorySteps = manager.trajectorySteps;
-
         for (int n = 0; n < trajectorySteps; n++)
         {
             for (int i = 0; i < celestialBodies.Count; i++)
@@ -53,7 +53,7 @@ public class EditorTrajectory : MonoBehaviour
             }
             foreach (CelestialBodyEditor cb in celestialBodies)
             {
-                cb.UpdatePosition();
+                cb.UpdatePosition(trajectoryStepInterval);
             }
         }
     }
@@ -102,7 +102,7 @@ public class EditorTrajectory : MonoBehaviour
         Vector3 accelerationBody1 = force / body1.mass;
         Vector3 accelerationBody2 = -force / body2.mass;
 
-        body1.UpdateVelocity(accelerationBody1);
-        body2.UpdateVelocity(accelerationBody2);
+        body1.UpdateVelocity(accelerationBody1 * trajectoryStepInterval);
+        body2.UpdateVelocity(accelerationBody2 * trajectoryStepInterval);
     }
 }

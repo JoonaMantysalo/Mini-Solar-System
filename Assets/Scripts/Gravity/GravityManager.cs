@@ -1,13 +1,9 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class GravityManager : MonoBehaviour
 {
     public float timeStep;
-    public int trajectorySteps;
     public float gravitationalConstant;
     List<CelestialBody> celestialBodies;
     PlayerController player;
@@ -36,9 +32,9 @@ public class GravityManager : MonoBehaviour
 
         foreach (CelestialBody cb in celestialBodies)
         {
+            cb.UpdatePosition(timeStep);
             ApplyPlayerGravity(cb);
             ApplyShipGravity(cb);
-            cb.UpdatePosition(timeStep);
         }
     }
 
@@ -52,7 +48,7 @@ public class GravityManager : MonoBehaviour
         float distance = direction.magnitude;
         direction.Normalize();
 
-        float forceMagnitude = GravitationalPull(body1.mass, body2.mass, distance);
+        float forceMagnitude = GravitationalPull(rb1.mass, rb2.mass, distance);
 
         Vector3 force = direction * forceMagnitude;
         body1.UpdateForce(force * timeStep);
@@ -68,7 +64,7 @@ public class GravityManager : MonoBehaviour
         float distance = direction.magnitude;
         direction.Normalize();
 
-        float forceMagnitude = GravitationalPull(player.mass, cb.mass, distance);
+        float forceMagnitude = GravitationalPull(rb1.mass, rb2.mass, distance);
 
         Vector3 force = direction * forceMagnitude;
         player.UpdateForce(force);
@@ -83,7 +79,7 @@ public class GravityManager : MonoBehaviour
         float distance = direction.magnitude;
         direction.Normalize();
 
-        float forceMagnitude = GravitationalPull(ship.mass, cb.mass, distance);
+        float forceMagnitude = GravitationalPull(rb1.mass, rb2.mass, distance);
 
         Vector3 force = direction * forceMagnitude;
         ship.UpdateForce(force);
