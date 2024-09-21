@@ -6,9 +6,10 @@ public class ShipController : MonoBehaviour, IControllable
     public float mass;
 
     [SerializeField] Vector3 initialVelocity;
-    [SerializeField] float boosterStrength = 8000f;
-    [SerializeField] float rotationForce = 2000f;
-    [SerializeField] float rollForce = 100f;
+    [SerializeField] float boosterStrength;
+    [SerializeField] float rotationForce;
+    [SerializeField] float rollForce;
+    [SerializeField] PlayerController playerController;
 
 
     void Start()
@@ -23,16 +24,16 @@ public class ShipController : MonoBehaviour, IControllable
         rb.velocity += force / mass;
     }
 
-    public void SetVelocity(Vector3 velocity)
-    {
-        rb.velocity = velocity;
-    }
-
     public void HandleInput(InputController input)
     {
         HandleRotation(input);
         Vector3 moveVelocity = transform.TransformDirection(input.GetSpaceShipMovement().normalized);
         HandleMovement(moveVelocity);
+
+        if (input.InteractKey() && playerController.currentState == PlayerState.Seated)
+        {
+            playerController.StandUp();
+        }
     }
 
     void HandleMovement(Vector3 moveVelocity)

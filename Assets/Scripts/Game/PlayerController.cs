@@ -6,30 +6,30 @@ public class PlayerController : MonoBehaviour, IControllable
     public Rigidbody rb;
     public float mass;
     public Vector3 initialVelocity;
+    public PlayerState currentState { get; private set; }
 
-    float mouseSensitivity = 1.5f;
-
-    float verticalRotation = 0.0f;
-    float verticalRotationLimit = 90.0f;
-    Camera playerCamera;
-    [SerializeField] float walkSpeed = 2.5f;
-    [SerializeField] float runningSpeed = 4f;
-    [SerializeField] float jumpForce = 300f;
-    [SerializeField] float jetPackForce = 120f;
-    float standUpSpeed = 5f;
-    public float stickToGroundForce;
-    float timeStep;
-    Rigidbody shipRb;
-    bool isGrounded;
-    bool isSeated;
-    CelestialBody currentPlanet;
-    PlayerState currentState;
     [SerializeField] ShipController shipController;
     [SerializeField] ShipDetection shipDetection;
     [SerializeField] GameObject seat;
-
     [SerializeField] Transform sittingPosition;
     [SerializeField] Transform standUpPosition;
+    [SerializeField] float walkSpeed;
+    [SerializeField] float runningSpeed;
+    [SerializeField] float jumpForce;
+    [SerializeField] float jetPackForce;
+    [SerializeField] float stickToGroundForce;
+
+    float mouseSensitivity = 1.5f;
+    float verticalRotation = 0.0f;
+    float verticalRotationLimit = 90.0f;
+    float standUpSpeed = 5f;
+    float timeStep;
+    bool isGrounded = false;
+    bool isSeated = false;
+
+    Camera playerCamera;
+    Rigidbody shipRb;
+    CelestialBody currentPlanet;
     Collider playerCollider;
     Quaternion correctingRotation;
 
@@ -120,7 +120,7 @@ public class PlayerController : MonoBehaviour, IControllable
         GameManager.Instance.SwitchControl(shipController);
     }
 
-    void StandUp()
+    public void StandUp()
     {
         transform.parent = null;
         transform.position = standUpPosition.position;
@@ -165,9 +165,9 @@ public class PlayerController : MonoBehaviour, IControllable
                 else
                 {
                     GroundMovement(moveVelocity);
+                    SetPlayerStandingUpOnPlanet();
                 }
 
-                SetPlayerStandingUpOnPlanet();
             }
             else if (currentState == PlayerState.OnShip)
             {
@@ -188,7 +188,6 @@ public class PlayerController : MonoBehaviour, IControllable
     void Jump(Vector3 moveVelocity)
     {
         rb.velocity = currentPlanet.rb.velocity + moveVelocity + transform.up * jumpForce;
-        //rb.AddForce(currentPlanet.rb.velocity + transform.up * jumpForce, ForceMode.Impulse);
     }
 
     void MovementOnShip(Vector3 moveVelocity)
