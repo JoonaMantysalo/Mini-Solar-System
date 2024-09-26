@@ -7,6 +7,7 @@ TagManager:
   - CelestialBody
   - GravityManager
   - SpaceShip
+  - Interactable
   layers:
   - Default
   - TransparentFX

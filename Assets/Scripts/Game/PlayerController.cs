@@ -18,6 +18,10 @@ public class PlayerController : MonoBehaviour, IControllable
     [SerializeField] float jumpForce;
     [SerializeField] float jetPackForce;
     [SerializeField] float stickToGroundForce;
+    [SerializeField] GameObject groundControlsUI;
+    [SerializeField] GameObject flyingControlsUI;
+    [SerializeField] GameObject shipControlsUI;
+    [SerializeField] GameObject interactControlsUI;
 
     float mouseSensitivity = 1.5f;
     float verticalRotation = 0.0f;
@@ -31,6 +35,7 @@ public class PlayerController : MonoBehaviour, IControllable
     Rigidbody shipRb;
     CelestialBody currentPlanet;
     Collider playerCollider;
+    GameObject lookingAtinterActableObject;
     Quaternion correctingRotation;
 
     void Start()
@@ -64,6 +69,17 @@ public class PlayerController : MonoBehaviour, IControllable
     void Update()
     {
         SetState();
+        SetButtonPromts();
+
+        lookingAtinterActableObject = LookingAtInteractable();
+        if (lookingAtinterActableObject != null)
+        {
+            interactControlsUI.SetActive(true);
+        }
+        else
+        {
+            interactControlsUI.SetActive(false);
+        }
     }
 
     void SetState()
@@ -74,22 +90,53 @@ public class PlayerController : MonoBehaviour, IControllable
         else currentState = PlayerState.Flying;
     }
 
+    void SetButtonPromts()
+    {
+        if (currentState == PlayerState.Seated)
+        {
+            groundControlsUI.SetActive(false);
+            flyingControlsUI.SetActive(false);
+            shipControlsUI.SetActive(true);
+        }
+        else if (currentState == PlayerState.Flying)
+        {
+            groundControlsUI.SetActive(false);
+            flyingControlsUI.SetActive(true);
+            shipControlsUI.SetActive(false);
+        }
+        else
+        {
+            groundControlsUI.SetActive(true);
+            flyingControlsUI.SetActive(false);
+            shipControlsUI.SetActive(false);
+        }
+    }
+
+    GameObject LookingAtInteractable()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit))
+        {
+            if (hit.collider.gameObject.CompareTag("Interactable"))
+            {
+                return hit.collider.gameObject;
+            }
+        }
+        return null;
+    }
+
     public void HandleInput(InputController input)
     {
         HandleCamera(input.GetMouseHorizontal(), input.GetMouseVertical());
         HandleMovement(input);
 
-        if(input.SitKey())
+        if(input.SitKey() && lookingAtinterActableObject != null)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit))
+            if (IsPartOfChair(lookingAtinterActableObject) && currentState != PlayerState.Seated)
             {
-                if (IsPartOfChair(hit.collider.gameObject) && currentState != PlayerState.Seated)
-                {
-                    SitPlayer();
-                }
+                SitPlayer();
             }
             
         }

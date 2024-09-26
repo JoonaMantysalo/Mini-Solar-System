@@ -6,7 +6,7 @@ public class GameManager : MonoBehaviour
     public PlayerController player;
     public IControllable activeController;
 
-    private InputController inputController = new InputController();
+    InputController inputController = new InputController();
 
     void Awake()
     {

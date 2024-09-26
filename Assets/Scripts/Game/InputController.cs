@@ -2,6 +2,7 @@
 
 public class InputController
 {
+
     public float GetHorizontal()
     {
         return Input.GetAxis("Horizontal");
