@@ -1,0 +1,1 @@
+This Unity project consists of a small-scale simulation of a solar system with planets, moons, and a central Sun. Player can travel between planets with a spaceship. All the movements of the celestial bodies is simulated with gravity based on Newton's Law of Gravitation. Inspired by the game Outer Wilds.
