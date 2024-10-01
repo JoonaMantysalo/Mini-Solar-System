@@ -10,6 +10,7 @@ public class ShipController : MonoBehaviour, IControllable
     [SerializeField] float rotationForce;
     [SerializeField] float rollForce;
     [SerializeField] PlayerController playerController;
+    [SerializeField] SeatPlayer seatPlayer;
 
 
     void Start()
@@ -32,7 +33,7 @@ public class ShipController : MonoBehaviour, IControllable
 
         if (input.InteractKey() && playerController.currentState == PlayerState.Seated)
         {
-            playerController.StandUp();
+            seatPlayer.StandUp();
         }
     }
 

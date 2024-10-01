@@ -3,25 +3,22 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour, IControllable
 {
-    public Rigidbody rb;
-    public float mass;
-    public Vector3 initialVelocity;
+    public Rigidbody rb { get; private set; }
     public PlayerState currentState { get; private set; }
+    public GameObject lookingAtinterActableObject { get; private set; }
+    public Camera playerCamera { get; private set; }
 
+    [SerializeField] float mass;
+    [SerializeField] Vector3 initialVelocity;
     [SerializeField] ShipController shipController;
     [SerializeField] ShipDetection shipDetection;
+    [SerializeField] SeatPlayer seatPlayer;
     [SerializeField] GameObject seat;
-    [SerializeField] Transform sittingPosition;
-    [SerializeField] Transform standUpPosition;
     [SerializeField] float walkSpeed;
     [SerializeField] float runningSpeed;
     [SerializeField] float jumpForce;
     [SerializeField] float jetPackForce;
     [SerializeField] float stickToGroundForce;
-    [SerializeField] GameObject groundControlsUI;
-    [SerializeField] GameObject flyingControlsUI;
-    [SerializeField] GameObject shipControlsUI;
-    [SerializeField] GameObject interactControlsUI;
 
     float mouseSensitivity = 1.5f;
     float verticalRotation = 0.0f;
@@ -29,19 +26,16 @@ public class PlayerController : MonoBehaviour, IControllable
     float standUpSpeed = 5f;
     float timeStep;
     bool isGrounded = false;
-    bool isSeated = false;
 
-    Camera playerCamera;
     Rigidbody shipRb;
     CelestialBody currentPlanet;
-    Collider playerCollider;
-    GameObject lookingAtinterActableObject;
-    Quaternion correctingRotation;
 
-    void Start()
+    void Awake()
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        rb = GetComponent<Rigidbody>();
 
         timeStep = GameObject.FindGameObjectWithTag("GravityManager").GetComponent<GravityManager>().timeStep;
 
@@ -52,8 +46,6 @@ public class PlayerController : MonoBehaviour, IControllable
         rb.mass = mass;
         rb.velocity = initialVelocity * timeStep;
 
-        correctingRotation = Quaternion.Euler(0, 90, 0);
-        playerCollider = GetComponent<Collider>();
         SetState();
     }
 
@@ -69,47 +61,16 @@ public class PlayerController : MonoBehaviour, IControllable
     void Update()
     {
         SetState();
-        SetButtonPromts();
 
         lookingAtinterActableObject = LookingAtInteractable();
-        if (lookingAtinterActableObject != null)
-        {
-            interactControlsUI.SetActive(true);
-        }
-        else
-        {
-            interactControlsUI.SetActive(false);
-        }
     }
 
     void SetState()
     {
-        if (isSeated) currentState = PlayerState.Seated;
+        if (seatPlayer.isSeated) currentState = PlayerState.Seated;
         else if (shipDetection.IsPlayerInside()) currentState = PlayerState.OnShip;
         else if (isGrounded) currentState = PlayerState.OnGround;
         else currentState = PlayerState.Flying;
-    }
-
-    void SetButtonPromts()
-    {
-        if (currentState == PlayerState.Seated)
-        {
-            groundControlsUI.SetActive(false);
-            flyingControlsUI.SetActive(false);
-            shipControlsUI.SetActive(true);
-        }
-        else if (currentState == PlayerState.Flying)
-        {
-            groundControlsUI.SetActive(false);
-            flyingControlsUI.SetActive(true);
-            shipControlsUI.SetActive(false);
-        }
-        else
-        {
-            groundControlsUI.SetActive(true);
-            flyingControlsUI.SetActive(false);
-            shipControlsUI.SetActive(false);
-        }
     }
 
     GameObject LookingAtInteractable()
@@ -132,52 +93,20 @@ public class PlayerController : MonoBehaviour, IControllable
         HandleCamera(input.GetMouseHorizontal(), input.GetMouseVertical());
         HandleMovement(input);
 
-        if(input.SitKey() && lookingAtinterActableObject != null)
+        if (input.SitKey() && currentState != PlayerState.Seated && IsPartOfChair(lookingAtinterActableObject))
         {
-            if (IsPartOfChair(lookingAtinterActableObject) && currentState != PlayerState.Seated)
-            {
-                SitPlayer();
-            }
-            
-        }
-        if (input.InteractKey() && currentState == PlayerState.Seated)
-        {
-            StandUp();
+            seatPlayer.SitPlayer();
         }
     }
+
 
     bool IsPartOfChair(GameObject clickedObject)
     {
+        if (clickedObject == null) return false;
         return clickedObject == seat || clickedObject.transform.IsChildOf(seat.transform);
     }
 
-    void SitPlayer()
-    {
-        rb.isKinematic = true;
 
-        transform.position = sittingPosition.position;
-        transform.rotation = sittingPosition.rotation * correctingRotation;
-        transform.parent = sittingPosition;
-
-        playerCamera.transform.rotation = new Quaternion(0, 0, 0, 0);
-
-        playerCollider.enabled = false;
-        isSeated = true;
-
-        GameManager.Instance.SwitchControl(shipController);
-    }
-
-    public void StandUp()
-    {
-        transform.parent = null;
-        transform.position = standUpPosition.position;
-
-        isSeated = false;
-        rb.isKinematic = false;
-        playerCollider.enabled = true;
-
-        GameManager.Instance.SwitchControl(this);
-    }
 
     void HandleCamera(float mouseX, float mouseY)
     {
