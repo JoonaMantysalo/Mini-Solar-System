@@ -81,11 +81,6 @@ public class InputController
 
     public bool InteractKey()
     {
-        return Input.GetKeyDown(KeyCode.F);
-    }
-
-    public bool SitKey()
-    {
-        return Input.GetMouseButtonDown(0);
+        return Input.GetKeyDown(KeyCode.F) || Input.GetMouseButtonDown(0);
     }
 }

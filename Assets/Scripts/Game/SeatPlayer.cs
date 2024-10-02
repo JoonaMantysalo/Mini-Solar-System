@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class SeatPlayer : MonoBehaviour
+public class SeatPlayer : MonoBehaviour, IInteractable
 {
     [SerializeField] Transform sittingPosition;
     [SerializeField] Transform standUpPosition;
@@ -26,7 +26,12 @@ public class SeatPlayer : MonoBehaviour
         correctingRotation = Quaternion.Euler(0, 90, 0);
     }
 
-    public void SitPlayer()
+    public void Interact()
+    {
+        SitPlayer();
+    }
+
+    void SitPlayer()
     {
         playerRb.isKinematic = true;
 
@@ -53,4 +58,5 @@ public class SeatPlayer : MonoBehaviour
 
         GameManager.Instance.SwitchControl(playerController);
     }
+
 }

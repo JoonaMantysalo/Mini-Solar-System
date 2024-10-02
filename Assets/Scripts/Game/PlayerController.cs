@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour, IControllable
     [SerializeField] Vector3 initialVelocity;
     [SerializeField] ShipController shipController;
     [SerializeField] ShipDetection shipDetection;
+    [SerializeField] WalkOnDoorDetection walkOnDoorDetection;
     [SerializeField] SeatPlayer seatPlayer;
     [SerializeField] GameObject seat;
     [SerializeField] float walkSpeed;
@@ -24,6 +25,7 @@ public class PlayerController : MonoBehaviour, IControllable
     float verticalRotation = 0.0f;
     float verticalRotationLimit = 90.0f;
     float standUpSpeed = 5f;
+    float rayCastMaxDistance = 3f;
     float timeStep;
     bool isGrounded = false;
 
@@ -68,7 +70,7 @@ public class PlayerController : MonoBehaviour, IControllable
     void SetState()
     {
         if (seatPlayer.isSeated) currentState = PlayerState.Seated;
-        else if (shipDetection.IsPlayerInside()) currentState = PlayerState.OnShip;
+        else if (shipDetection.IsPlayerInside() || walkOnDoorDetection.OnDoor()) currentState = PlayerState.OnShip;
         else if (isGrounded) currentState = PlayerState.OnGround;
         else currentState = PlayerState.Flying;
     }
@@ -78,7 +80,7 @@ public class PlayerController : MonoBehaviour, IControllable
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit))
+        if (Physics.Raycast(ray, out hit, rayCastMaxDistance))
         {
             if (hit.collider.gameObject.CompareTag("Interactable"))
             {
@@ -93,20 +95,21 @@ public class PlayerController : MonoBehaviour, IControllable
         HandleCamera(input.GetMouseHorizontal(), input.GetMouseVertical());
         HandleMovement(input);
 
-        if (input.SitKey() && currentState != PlayerState.Seated && IsPartOfChair(lookingAtinterActableObject))
+        // 
+        if (input.InteractKey() && lookingAtinterActableObject != null)
         {
-            seatPlayer.SitPlayer();
+            IInteractable interactable;
+            // Try to get the interactable component of the object or it's parent object
+            if (!lookingAtinterActableObject.TryGetComponent<IInteractable>(out interactable))
+            {
+                interactable = lookingAtinterActableObject.GetComponentInParent<IInteractable>();
+            }
+            if (interactable != null)
+            {
+                interactable.Interact();
+            }
         }
     }
-
-
-    bool IsPartOfChair(GameObject clickedObject)
-    {
-        if (clickedObject == null) return false;
-        return clickedObject == seat || clickedObject.transform.IsChildOf(seat.transform);
-    }
-
-
 
     void HandleCamera(float mouseX, float mouseY)
     {
